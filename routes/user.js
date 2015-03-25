@@ -1,34 +1,56 @@
 var mongoose = require('mongoose'),
-    Article = mongoose.model("Article"),
-    ObjectId = mongoose.Types.ObjectId;
+    uuid     = require('node-uuid');
 
-exports.createUser = function(req, res, next) {
-  var userModel = new User(req.body);
-  userModel.save(function(err, user) {
-      if (err) {
-          res.status(500);
-          res.json({
-              type: false,
-              data: "Error occured: " + err
-          })
-      } else {
-          res.json({
-              type: true,
-              data: user
-          })
-      }
+var User     = mongoose.model("User");
+
+var standardErrorResposnse = function(code, res, err){
+  res.status(code);
+  res.json({
+    type: false,
+    data: "Error occured: " + err
   });
 };
 
-exports.viewUser = function(req, res, next) {
-  User.findById(new ObjectId(req.params.id), function(err, user) {
-    if (err) {
-      res.status(500);
+exports.createUser = function(req, res) {
+  var userDetails = req.body;
+  userDetails.uid = uuid.v1();
+  var userModel = new User(userDetails);
+  userModel.save(function(err, user) {
+    if (err) { standardErrorResposnse(500, res, err); }
+    else {
       res.json({
-        type: false,
-        data: "Error occured: " + err
+        type: true,
+        data: user
       });
-    } else {
+    }
+  });
+};
+
+exports.viewUser = function(req, res) {
+  User.where({uid: req.params.uid}).findOne(function(err, user) {
+    if (err) { standardErrorResposnse(500, res, err); }
+    else {
+      if (user) {
+        res.json({
+          type: true,
+          data: user
+        });
+      } else {
+        res.json({
+          type: false,
+          data: "User: " + req.params.uid + " not found"
+        });
+      }
+    }
+  });
+};
+
+exports.updateUser = function(req, res) {
+  var updatedUserDetails = {uid: req.params.uid};
+  updatedUserDetails.user = req.body.user;
+  User.where({uid: req.params.uid}).findOneAndUpdate(updatedUserDetails, function(err, user) {
+    if (err) { standardErrorResposnse(500, res, err); }
+    else {
       if (user) {
         res.json({
           type: true,
@@ -44,27 +66,12 @@ exports.viewUser = function(req, res, next) {
   });
 };
 
-exports.updateUser = function(req, res, next) {
-  var updatedUserModel = new User(req.body);
-  User.findByIdAndUpdate(new ObjectId(req.params.id), updatedUserModel, function(err, user) {
-    if (err) {
-      res.status(500);
-      res.json({
-          type: false,
-          data: "Error occured: " + err
-      })
-    } else {
-      if (user) {
-        res.json({
-            type: true,
-            data: user
-        })
-      } else {
-        res.json({
-            type: false,
-            data: "User: " + req.params.id + " not found"
-        })
-      }
+exports.checkUserName = function(req, res) {
+  User.where({user: req.params.tag}).findOne(function(err, user){
+    if (err) { standardErrorResposnse(500, res, err); }
+    else {
+      if (user) { res.json({type: true, data: "NA"}); }
+      else { res.json({type: false, data: "NA"}); }
     }
-  })
-}
+  });
+};

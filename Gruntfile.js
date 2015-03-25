@@ -17,13 +17,14 @@ module.exports = function(grunt) {
         unused: true,
         boss: true,
         eqnull: true,
+        node: true,
         globals: {}
       },
       gruntfile: {
         src: 'Gruntfile.js'
       },
-      lib_test: {
-        src: ['lib/**/*.js', 'test/**/*.js']
+      js: {
+        src: ['app.js', 'models/*.js', 'routes/*.js', 'test/**/*.js']
       }
     },
     nodeunit: {
@@ -34,9 +35,9 @@ module.exports = function(grunt) {
         files: '<%= jshint.gruntfile.src %>',
         tasks: ['jshint:gruntfile']
       },
-      lib_test: {
-        files: '<%= jshint.lib_test.src %>',
-        tasks: ['jshint:lib_test', 'nodeunit']
+      js: {
+        files: '<%= jshint.js.src %>',
+        tasks: ['jshint:js', 'nodeunit']
       }
     }
   });

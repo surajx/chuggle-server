@@ -9,8 +9,8 @@ if (process.env.NODE_ENV === 'production') {
   config = {
     currentEnv: "development",
     loungePort: 3000,
-    dbURL: "mongodb://localhost/userdb"
+    dbURL: "mongodb://127.0.0.1/userdb"
   }
 }
 
-exports.config = config;
+module.exports = config;
