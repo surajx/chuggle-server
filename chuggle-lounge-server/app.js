@@ -36,6 +36,10 @@ server.get('/api/v1/user/view/:uid', controllers.loungeActions.viewUser);
 server.get('/api/v1/user/availability/:tag', controllers.loungeActions.checkUserName);
 server.get('/api/v1/play/:uid', controllers.loungeActions.sendGameDetails);
 
+server.post('/api/v1/gs/sync', controllers.loungeActions.syncGameServer);
+
+//route to de-register game server or implement a game server health checker.
+
 var port = config.loungePort;
 server.listen(port, function (err) {
   if (err) { console.error(err); }

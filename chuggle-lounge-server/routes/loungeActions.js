@@ -90,3 +90,17 @@ exports.sendGameDetails = function(req, res) {
     }
   });
 };
+
+exports.syncGameServer = function(req, res){
+  GameServer.findOneAndUpdate({gpath:req.body.gpath}, {gpath:req.body.gpath, playercount:req.body.playercount}, {upsert: true}, function(err, serverDetails){
+    if (err) { standardErrorResposnse(500, res, err); }
+    else {
+      if (serverDetails){
+        res.json({
+          type: true,
+          data: { msg: "Synchronized game server" }
+        });
+      } else { standardErrorResposnse(500, res, new Error("Unable to Sync Game Server with Lounge")); }
+    }
+  });
+};
