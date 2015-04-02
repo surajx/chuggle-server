@@ -33,6 +33,7 @@ var server = restify.createServer();
 server
   .use(restify.fullResponse())
   .use(restify.bodyParser());
+
 server.get('/api/v1/game', function(req, res){
   res.json({
     type: true,

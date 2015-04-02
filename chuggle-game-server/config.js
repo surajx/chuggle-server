@@ -3,7 +3,9 @@ if (process.env.NODE_ENV === 'production') {
   config = {
     currentEnv: "production",
     wsPort: process.env.PORT,
-    dbURL: "mongodb://userAdmin:Userr0cks@ds055699.mongolab.com:55699/gamedb",
+    loungeSyncAPI: "http://some.paas/api/v1/gs/sync",
+    gameCoordinatorAPI: "http://some.pass/api/v1/game",
+    gameServerURL: "http://some.pass", //check how to dynamically get server url?
     gameStates:{
       INIT: "INITIALIZING",
       RUNNING: "RUNNING",
@@ -14,8 +16,10 @@ if (process.env.NODE_ENV === 'production') {
 } else {
   config = {
     currentEnv: "development",
-    wsPort: 3001,
-    dbURL: "mongodb://127.0.0.1/gamedb",
+    wsPort: 4000,
+    loungeSyncAPI: "http://localhost:3000/api/v1/gs/sync",
+    gameCoordinatorAPI: "http://localhost:5000/api/v1/game",
+    gameServerURL: "http://localhost",
     gameStates:{
       INIT: "INITIALIZING",
       RUNNING: "RUNNING",
