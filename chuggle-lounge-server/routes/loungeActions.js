@@ -1,7 +1,8 @@
 var mongoose = require('mongoose'),
     uuid     = require('node-uuid');
 
-var User     = mongoose.model("User");
+var User       = mongoose.model("User"),
+    GameServer = mongoose.model("GameServer");
 
 var standardErrorResposnse = function(code, res, err){
   res.status(code);
@@ -72,6 +73,20 @@ exports.checkUserName = function(req, res) {
     else {
       if (user) { res.json({type: true, data: "NA"}); }
       else { res.json({type: false, data: "NA"}); }
+    }
+  });
+};
+
+exports.sendGameDetails = function(req, res) {
+  GameServer.findOne({}).sort({usercount: 1}).exec(function(err, serverDetails){
+    if (err) { standardErrorResposnse(500, res, err); }
+    else {
+      if (serverDetails) {
+        res.json({
+          type: true,
+          data: {gpath: serverDetails.gpath}
+        });
+      } else { standardErrorResposnse(500, res, new Error("No Game Rooms available")); }
     }
   });
 };

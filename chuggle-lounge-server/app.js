@@ -26,23 +26,24 @@ fs.readdirSync(controllers_path).forEach(function (file) {
 var server = restify.createServer();
 
 server
-    .use(restify.fullResponse())
-    .use(restify.bodyParser());
+  .use(restify.fullResponse())
+  .use(restify.bodyParser());
 
 // Lounge routes
-server.post('/api/v1/user', controllers.user.createUser);
-server.put('/api/v1/user/:uid', controllers.user.updateUser);
-server.get('/api/v1/user/:uid', controllers.user.viewUser);
-server.get('/api/v1/checkusername/:tag', controllers.user.checkUserName);
+server.post('/api/v1/user/register', controllers.loungeActions.createUser);
+server.put('/api/v1/user/update/:uid', controllers.loungeActions.updateUser);
+server.get('/api/v1/user/view/:uid', controllers.loungeActions.viewUser);
+server.get('/api/v1/user/availability/:tag', controllers.loungeActions.checkUserName);
+server.get('/api/v1/play/:uid', controllers.loungeActions.sendGameDetails);
 
-var port = config.loungePort || 3000;
+var port = config.loungePort;
 server.listen(port, function (err) {
-    if (err){ console.error(err); }
-    else { console.log('App is ready at : ' + port); }
+  if (err) { console.error(err); }
+  else { console.log('App is ready at : ' + port); }
 });
 
 if (config.currentEnv === 'production') {
-    process.on('uncaughtException', function (err) {
-        console.error(JSON.parse(JSON.stringify(err, ['stack', 'message', 'inner'], 2)));
-    });
+  process.on('uncaughtException', function (err) {
+    console.error(JSON.parse(JSON.stringify(err, ['stack', 'message', 'inner'], 2)));
+  });
 }
