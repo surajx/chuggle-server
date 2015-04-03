@@ -2,7 +2,9 @@ var config  = require('./config'),
     io      = require('socket.io')(config.wsPort),
     request = require('request');
 
-var syncWithLounge = function(playercount){
+var connectedUserCnt = 0;
+
+var syncWithLounge = function(playercount, callback){
   request({
     uri: config.loungeSyncAPI,
     method: "POST",
@@ -10,8 +12,13 @@ var syncWithLounge = function(playercount){
       gpath: config.gameServerURL + ":" + config.wsPort,
       playercount: playercount
     }
-  }, function(error, response, body) {
-    console.log(body);
+  }, function(err, res, resp) {
+    if (err) { callback(err); }
+    if (resp.type){
+      callback(null);
+    } else{
+      callback(new Error("Unable to sync with Lounge."));
+    }
   });
 };
 
@@ -33,57 +40,74 @@ var getCurrentGameParameters = function(callback){
   });
 }
 
-//Game Server Startup sync
-syncWithLounge(0);
-/*
-var g_duration = 0;
-var c_duration = 0;
-var d_duration = 0;
-
-setTimeout (function(){getCurrentGameParameters(function(err, gameData) {
-  if (err) { console.log(err); }
-  else {
-    console.log(gameData);
-    if ((gameData.round_offset - gameData.g_duration) > 0) {
-      console.log("Game over.");
-      if ((gameData.round_offset - gameData.g_duration - gameData.c_duration) > 0) {
-        console.log("Score Consolidation over.");
-        //request leaderboard and wait out l_d -
-      } else {
-        //default score to 0 and wait out c_d - r_o + g_d and then request leaderboardcand broadcast it.
-      }
+var gameActions = function(wsInterface, gameData, callback){
+  console.log(gameData);
+  if ((gameData.round_offset - gameData.g_duration) > 0) {
+    if ((gameData.round_offset - gameData.g_duration - gameData.c_duration) > 0) {
+      /*requestLeaderBoard(function(err, leaderboardData){
+        if (err) { callback(err); }
+        else {
+          gameData.leaderboard = leaderboardData;
+          wsInterface.emit(config.gameStates.LEADERBOARD, gameData);
+          callback(null);
+        }
+      });*/
+      console.log("GAME STATE: " + config.gameStates.LEADERBOARD);
+      callback(null);
     } else {
-      //broadcast seed and remaining duration (g_d-r_o)
+      console.log("GAME STATE: " + config.gameStates.COSOLIDATING);
+      wsInterface.emit(config.gameStates.COSOLIDATING, gameData);
+      callback(null);
     }
+  } else {
+    console.log("GAME STATE: " + config.gameStates.RUNNING);
+    wsInterface.emit(config.gameStates.RUNNING, gameData);
+    callback(null);
   }
-})}, );
+}
 
-//define actual callback for subsequent rounds.
-//In any end case do a setInterval to make sure that you are triggering getCurrentGameParamenters with correct callback and with a delay og g_d + c_d + l+d
+var gameLoop = function(){
+  getCurrentGameParameters(function(err, data){
+    if (err) { console.log(err); }
+    else {
+      gameActions(io, data, function(err){
+        if (err) { console.log(err); }
+        else{
+          var remTime = data.g_duration + data.c_duration + data.l_duration - data.round_offset + Math.random();
+          setTimeout(gameLoop, remTime*1000);
+        }
+      });
+    }
+  });
+};
 
-/*
-//Register with Lounge
-
-//Loop START
-// --request seed, s_epoch, gid from lounge
-// --update state to INIT, set stateData to {lb:<>}
-// --calculate diff between current epoch and s_epoc which is s_delay
-// --wait for s_delay duration
-// --update state to RUNNING, broadcast state and set stateData to {seed:<>, s_epoch:<>, g_duration:<>}
-// --wait for g_duration seconds
-// --update state to COSOLIDATING
-// --wait for 20 seconds to consolidate scores
-// --request Leaderboard from lounge
-// --update state to LEADERBOARD
-// --broadcast leaderboard to clients
-//Loop END
-
-*/
+syncWithLounge(connectedUserCnt, function(err){
+  if (err) { console.log(err); }
+  else { gameLoop(); }
+});
 
 io
   .on('connection', function (socket) {
-    socket.emit(currentState, stateData);
-    socket.on('score', function(score){
-      //update score in redis.
+    connectedUserCnt += 1;
+    getCurrentGameParameters(function(err, data){
+      if (err) { console.log(err); }
+      else {
+        gameActions(socket, data, function(err){
+          if (err) { console.log(err); }
+        });
+      }
     });
-  });
+    socket
+      .on('score', function(score){
+      //update score in redis.
+    })
+      .on('disconnect', function(){
+        connectedUserCnt -= 1;
+        syncWithLounge(connectedUserCnt, function(err){
+          if (err) { console.log(err); }
+        });
+    });
+    syncWithLounge(connectedUserCnt, function(err){
+      if (err) { console.log(err); }
+    });
+});

@@ -97,8 +97,7 @@ exports.syncGameServer = function(req, res){
     else {
       if (serverDetails){
         res.json({
-          type: true,
-          data: { msg: "Synchronized game server" }
+          type: true
         });
       } else { standardErrorResposnse(500, res, new Error("Unable to Sync Game Server with Lounge")); }
     }
