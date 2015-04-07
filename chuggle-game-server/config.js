@@ -11,7 +11,9 @@ if (process.env.NODE_ENV === 'production') {
       RUNNING: "RUNNING",
       COSOLIDATING: "CONSOLIDATING",
       LEADERBOARD: "LEADERBOARD"
-    }
+    },
+    redisURL: "http://some.redis.paas",
+    redisPORT: 6379
   }
 } else {
   config = {
@@ -25,7 +27,9 @@ if (process.env.NODE_ENV === 'production') {
       RUNNING: "RUNNING",
       COSOLIDATING: "CONSOLIDATING",
       LEADERBOARD: "LEADERBOARD"
-    }
+    },
+    redisURL: "127.0.0.1",
+    redisPORT: 6379
   }
 }
 
