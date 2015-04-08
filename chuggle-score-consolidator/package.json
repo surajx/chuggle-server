@@ -1,0 +1,23 @@
+{
+  "name": "chuggle-server",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/surajx/chuggle-server.git"
+  },
+  "main": "app.js",
+  "engines": {
+    "node": ">= 0.10.0"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.5",
+    "grunt-contrib-jshint": "~0.10.0",
+    "grunt-contrib-watch": "~0.6.1",
+    "grunt-contrib-nodeunit": "~0.4.1"
+  },
+  "dependencies": {
+    "mongoose": "^3.8.25",
+    "node-uuid": "^1.4.3",
+    "restify": "^3.0.1"
+  }
+}

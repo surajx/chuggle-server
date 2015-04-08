@@ -11,9 +11,9 @@ if (process.env.NODE_ENV === 'production') {
   config = {
     currentEnv: "development",
     controllerPort: 5000,
-    gameDuration: 20,
-    consolidateDuration: 10,
-    leaderboardDuration: 10
+    gameDuration: 30,
+    consolidateDuration: 20,
+    leaderboardDuration: 20
   }
 }
 
