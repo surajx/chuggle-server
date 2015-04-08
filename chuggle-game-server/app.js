@@ -23,6 +23,7 @@ var syncWithLounge = function(playercount, callback){
       if (resp.type){
         callback(null);
       } else{
+        console.log(resp);
         callback(new Error("Unable to sync with Lounge."));
       }
     }
@@ -42,6 +43,7 @@ var getCurrentGameParameters = function(callback){
       if (resp.type){
         callback(null, resp.data);
       } else{
+        console.log(resp);
         callback(new Error("Unable to Retrieve game parameters from co-ordination server."));
       }
     }
@@ -111,6 +113,7 @@ var requestLeaderBoard = function(gid, callback){
 
 //shitty code: tremendous scope or refactoring
 var gameLoop = function(){
+  //flush redis
   getCurrentGameParameters(function(err, data){
     if (err) { console.log(err); }
     else {
@@ -129,20 +132,6 @@ var gameLoop = function(){
           });
           break;
         case config.gameStates.CONSOLIDATING:
-          //Send leaderboard state only when data is available?
-          //How to dynamically map time remining to next game?
-
-          //After 3/4th of the consolidation time
-          //request leaderboard async and attch to gameData when available.
-
-          //if leaderboard gid does not match the gid of the current gamedata then discard the leaderboard.
-          //else if currentState is LEADERBOARD send the data if its CONSOLIDATING attach it to gameData.
-
-          /* If the server enter into a consolidating state why send the scores?
-          sendScoresForConsolidation(function(err){
-            if (err) {console.log(err); }
-          });
-          */
           setTimeout(function(){
             gameState = config.gameStates.LEADERBOARD;
             requestLeaderBoard(gameData.gid, function(err, leaderBoard){
@@ -153,29 +142,6 @@ var gameLoop = function(){
               }
             });
           }, (gameData.g_duration + gameData.c_duration - gameData.round_offset)*1000);
-          /* with randomized score reporting FIX IT
-          if ((gameData.round_offset - gameData.g_duration)>gameData.c_duration/2) {
-            sendScoresForConsolidation(function(){
-              if (err) {console.log(err); }
-            });
-          } else {
-            setTimeout(function(){
-              sendScoresForConsolidation(function(){
-                if (err) {console.log(err); }
-              });
-            }, ((gameData.c_duration/2 - (gameData.round_offset - gameData.g_duration)) + Math.floor(Math.random()*10))*1000);
-          }
-          setTimeout(function(){
-            gameState = config.gameStates.LEADERBOARD;
-            requestLeaderBoard(gameData.gid, function(err, leaderBoard){
-              if(err) { console.log(err); }
-              else {
-                gameData.leaderboard = leaderBoard;
-                io.emit(gameState, gameData);
-              }
-            });
-          }, (gameData.g_duration + gameData.c_duration - gameData.round_offset)*1000);
-          */
           break;
         case config.gameStates.RUNNING:
           setTimeout(function(){
@@ -197,7 +163,7 @@ var gameLoop = function(){
                   }, gameData.c_duration*1000);
                 }
               });
-            },gameData.c_duration*500);
+            }, gameData.c_duration*500 + Math.random()*1000);
           }, (gameData.g_duration - gameData.round_offset)*1000);
           break;
       };
@@ -232,6 +198,3 @@ client.on('connect', function() {
       });
   });
 });
-
-//How to decide when and how to request Leaderboard.
-//implement Client.hmset redis

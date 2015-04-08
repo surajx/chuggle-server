@@ -41,7 +41,6 @@ exports.generateLeaderBoard = function(req,res) {
   Score.find({ gid:req.params.gid }).sort({score: -1}).exec(function(err, leaderBoard){
     if (err) { standardErrorResposnse(500, res, err); }
     else {
-      console.log(leaderBoard);
       if (leaderBoard) {
         res.json({
           type: true,
@@ -51,3 +50,5 @@ exports.generateLeaderBoard = function(req,res) {
     }
   });
 };
+
+//save high score in redis with persistence?
