@@ -176,7 +176,10 @@ client.on('connect', function() {
 
   syncWithLounge(connectedUserCnt, function(err) {
     if (err) { console.log(err); }
-    else { gameLoop(); }
+    else {
+      console.log('App is ready at : ' + config.wsPort);
+      gameLoop();
+    }
   });
 
   io
